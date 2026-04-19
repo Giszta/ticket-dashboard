@@ -1,0 +1,171 @@
+// Konfiguracja generatora i źródła danych
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// ENUMY
+// ============================================================
+
+enum UserRole {
+  CUSTOMER
+  AGENT
+  ADMIN
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum CommentVisibility {
+  PUBLIC
+  INTERNAL
+}
+
+enum ActivityAction {
+  TICKET_CREATED
+  STATUS_CHANGED
+  PRIORITY_CHANGED
+  ASSIGNED_TO_CHANGED
+  COMMENT_ADDED
+  TICKET_RESOLVED
+  TICKET_CLOSED
+}
+
+// ============================================================
+// USER
+// ============================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?   // null jeśli logowanie przez OAuth w przyszłości
+  role          UserRole  @default(CUSTOMER)
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relacje
+  createdTickets    Ticket[]      @relation("TicketCreatedBy")
+  assignedTickets   Ticket[]      @relation("TicketAssignedTo")
+  comments          Comment[]
+  activityLogs      ActivityLog[]
+
+  @@map("users")
+}
+
+// ============================================================
+// CATEGORY
+// ============================================================
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String   @default("#6B7280") // hex color dla UI
+  createdAt DateTime @default(now())
+
+  tickets Ticket[]
+
+  @@map("categories")
+}
+
+// ============================================================
+// TICKET
+// ============================================================
+
+model Ticket {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  status      TicketStatus   @default(OPEN)
+  priority    TicketPriority @default(MEDIUM)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  resolvedAt  DateTime?      // null dopóki ticket nie jest resolved/closed
+
+  // Relacje
+  createdById   String
+  createdBy     User      @relation("TicketCreatedBy", fields: [createdById], references: [id])
+
+  assignedToId  String?   // null = nieprzypisany
+  assignedTo    User?     @relation("TicketAssignedTo", fields: [assignedToId], references: [id])
+
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+
+  comments      Comment[]
+  activityLogs  ActivityLog[]
+
+  // Indeksy dla wydajności zapytań filtrowania
+  @@index([status])
+  @@index([priority])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([createdAt])
+
+  @@map("tickets")
+}
+
+// ============================================================
+// COMMENT
+// ============================================================
+
+model Comment {
+  id         String            @id @default(cuid())
+  body       String
+  visibility CommentVisibility @default(PUBLIC)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  // Relacje
+  ticketId  String
+  ticket    Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  authorId  String
+  author    User   @relation(fields: [authorId], references: [id])
+
+  @@index([ticketId])
+
+  @@map("comments")
+}
+
+// ============================================================
+// ACTIVITY LOG
+// ============================================================
+
+model ActivityLog {
+  id        String         @id @default(cuid())
+  action    ActivityAction
+  createdAt DateTime       @default(now())
+
+  // Metadane — przechowujemy jako JSON żeby być elastycznym
+  // Np: { "from": "OPEN", "to": "IN_PROGRESS" } dla zmiany statusu
+  metadata  Json?
+
+  // Relacje
+  ticketId  String
+  ticket    Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User   @relation(fields: [userId], references: [id])
+
+  @@index([ticketId])
+
+  @@map("activity_logs")
+}
