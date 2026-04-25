@@ -18,7 +18,7 @@ export const createTicketSchema = z.object({
 
   priority: z.nativeEnum(TicketPriority),
 
-  categoryId: z.string().cuid("Invalid category").optional().or(z.literal("")), // select z pustą wartością
+  categoryId: z.string().cuid("Invalid category").optional().nullable().or(z.literal("")), // select z pustą wartością
 });
 
 export const updateTicketSchema = z.object({
