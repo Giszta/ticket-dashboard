@@ -32,7 +32,7 @@ export function UserMenu({ user }: UserMenuProps) {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-700">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-medium text-blue-700">
         {initials}
       </div>
 
@@ -44,7 +44,7 @@ export function UserMenu({ user }: UserMenuProps) {
       <button
         onClick={handleSignOut}
         disabled={isSigningOut}
-        className="flex-shrink-0 rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+        className="shrink-0 rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
         title="Sign out"
         aria-label="Sign out"
       >
