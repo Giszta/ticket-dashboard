@@ -51,57 +51,45 @@ export const ticketRepository = {
       ? { createdById: filter.createdById }
       : {};
 
-    const [statusCounts, priorityCounts] = await db.$transaction([
-      // Grupujemy tickety po statusie
-      db.ticket.groupBy({
-        by: ["status"],
-        where,
-        _count: { id: true },
-      }),
-      // Grupujemy tickety po priorytecie
-      db.ticket.groupBy({
-        by: ["priority"],
-        where,
-        _count: { id: true },
-      }),
+    // Zamiast groupBy używamy osobnych count per wartość —
+    // prostsze, typesafe, zero problemów z Prisma generics
+    const [
+      totalOpen,
+      totalInProgress,
+      totalWaitingForCustomer,
+      totalResolved,
+      totalClosed,
+      totalLow,
+      totalMedium,
+      totalHigh,
+      totalUrgent,
+    ] = await db.$transaction([
+      db.ticket.count({ where: { ...where, status: "OPEN" } }),
+      db.ticket.count({ where: { ...where, status: "IN_PROGRESS" } }),
+      db.ticket.count({ where: { ...where, status: "WAITING_FOR_CUSTOMER" } }),
+      db.ticket.count({ where: { ...where, status: "RESOLVED" } }),
+      db.ticket.count({ where: { ...where, status: "CLOSED" } }),
+      db.ticket.count({ where: { ...where, priority: "LOW" } }),
+      db.ticket.count({ where: { ...where, priority: "MEDIUM" } }),
+      db.ticket.count({ where: { ...where, priority: "HIGH" } }),
+      db.ticket.count({ where: { ...where, priority: "URGENT" } }),
     ]);
 
-    // Mapujemy wyniki na wygodny obiekt
-    const byStatus = Object.fromEntries(statusCounts.map((s) => [s.status, s._count.id])) as Record<
-      TicketStatus,
-      number
-    >;
-
-    const byPriority = Object.fromEntries(
-      priorityCounts.map((p) => [p.priority, p._count.id]),
-    ) as Record<TicketPriority, number>;
-
-    // Uzupełniamy zerami dla brakujących statusów/priorytetów
-    const allStatuses: TicketStatus[] = [
-      "OPEN",
-      "IN_PROGRESS",
-      "WAITING_FOR_CUSTOMER",
-      "RESOLVED",
-      "CLOSED",
-    ];
-    const allPriorities: TicketPriority[] = ["LOW", "MEDIUM", "HIGH", "URGENT"];
-
-    for (const status of allStatuses) {
-      byStatus[status] = byStatus[status] ?? 0;
-    }
-    for (const priority of allPriorities) {
-      byPriority[priority] = byPriority[priority] ?? 0;
-    }
-
-    const total = Object.values(byStatus).reduce((sum, n) => sum + n, 0);
+    const total =
+      totalOpen + totalInProgress + totalWaitingForCustomer + totalResolved + totalClosed;
 
     return {
-      totalOpen: byStatus.OPEN,
-      totalInProgress: byStatus.IN_PROGRESS,
-      totalWaitingForCustomer: byStatus.WAITING_FOR_CUSTOMER,
-      totalResolved: byStatus.RESOLVED,
-      totalClosed: byStatus.CLOSED,
-      totalByPriority: byPriority,
+      totalOpen,
+      totalInProgress,
+      totalWaitingForCustomer,
+      totalResolved,
+      totalClosed,
+      totalByPriority: {
+        LOW: totalLow,
+        MEDIUM: totalMedium,
+        HIGH: totalHigh,
+        URGENT: totalUrgent,
+      },
       total,
     };
   },
