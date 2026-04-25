@@ -27,7 +27,7 @@ export function TableRowSkeleton({ cols = 5 }: { cols?: number }) {
     <tr className="border-b border-gray-100">
       {Array.from({ length: cols }).map((_, i) => (
         <td key={i} className="px-4 py-3">
-          <Skeleton className="h-4 w-full max-w-[120px]" />
+          <Skeleton className="h-4 w-full max-w-30" />
         </td>
       ))}
     </tr>
