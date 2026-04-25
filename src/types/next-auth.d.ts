@@ -1,4 +1,4 @@
-import { UserRole } from "../src/generated/prisma/client";
+import { UserRole } from "@prisma/client";
 import { DefaultSession, DefaultJWT } from "next-auth";
 
 // Rozszerzamy moduł "next-auth" — augmentacja modułów TypeScript
