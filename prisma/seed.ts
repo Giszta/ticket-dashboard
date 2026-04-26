@@ -5,30 +5,10 @@ import {
   TicketPriority,
   CommentVisibility,
   ActivityAction,
-} from "../src/generated/prisma/enums";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
+} from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error("DATABASE_URL is not set");
-}
-
-const pool = new Pool({
-  connectionString,
-});
-
-const adapter = new PrismaPg(pool);
-
-const db = new PrismaClient({
-  adapter,
-});
-
-// ============================================================
-// DANE DEMO
-// ============================================================
+const db = new PrismaClient();
 
 async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
@@ -288,7 +268,6 @@ async function main() {
   console.log("📋 Created activity logs");
 
   console.log("\n✅ Seed completed successfully!");
-  console.log("\n📊 Created:");
   console.log(`   - ${await db.user.count()} users`);
   console.log(`   - ${await db.category.count()} categories`);
   console.log(`   - ${await db.ticket.count()} tickets`);
@@ -307,5 +286,4 @@ main()
   })
   .finally(async () => {
     await db.$disconnect();
-    await pool.end();
   });
