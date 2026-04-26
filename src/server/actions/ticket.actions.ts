@@ -23,7 +23,13 @@ export async function createTicketAction(
     return { success: false, error: "You must be logged in to create a ticket" };
   }
 
-  // 2. Walidacja — parsujemy FormData do obiektu
+  // 2. Uprawnienia — PRZED walidacją danych
+  const userRole = session.user.role as UserRole;
+  if (userRole === "AGENT") {
+    return { success: false, error: "Agents cannot create tickets" };
+  }
+
+  // 3. Walidacja — PO sprawdzeniu uprawnień
   const rawData = {
     title: formData.get("title"),
     description: formData.get("description"),
@@ -32,9 +38,7 @@ export async function createTicketAction(
   };
 
   const parsed = createTicketSchema.safeParse(rawData);
-
   if (!parsed.success) {
-    // Zwracamy pierwszy błąd walidacji
     const firstError = parsed.error.issues[0];
     return {
       success: false,
@@ -44,24 +48,16 @@ export async function createTicketAction(
 
   const { title, description, priority, categoryId } = parsed.data;
 
-  // 3. Uprawnienia — sprawdź że user może tworzyć tickety
-  const userRole = session.user.role as UserRole;
-  if (userRole === "AGENT") {
-    // Agent nie tworzy ticketów — obsługuje je
-    return { success: false, error: "Agents cannot create tickets" };
-  }
-
   try {
-    // 4. Utwórz ticket i log w transakcji
     const ticket = await db.$transaction(async (tx) => {
       const newTicket = await tx.ticket.create({
         data: {
           title,
           description,
           priority,
-          status: TicketStatus.OPEN,
+          status: "OPEN",
           createdById: session.user.id,
-          categoryId: categoryId || null, // pusty string → null
+          categoryId: categoryId || null,
         },
       });
 
@@ -69,20 +65,16 @@ export async function createTicketAction(
         data: {
           ticketId: newTicket.id,
           userId: session.user.id,
-          action: ActivityAction.TICKET_CREATED,
+          action: "TICKET_CREATED",
         },
       });
 
       return newTicket;
     });
 
-    // 5. Invalidate cache listy ticketów
     revalidatePath("/tickets");
-    revalidatePath("/"); // dashboard stats
+    revalidatePath("/");
 
-    // 6. Redirect na nowy ticket
-    // UWAGA: redirect() rzuca specjalny wyjątek — musi być POZA try/catch
-    // lub złapany i re-rzucony. Tu zwracamy ID i robimy redirect w komponencie.
     return { success: true, data: { id: ticket.id } };
   } catch (error) {
     console.error("Failed to create ticket:", error);
