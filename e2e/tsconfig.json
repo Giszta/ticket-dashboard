@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["@playwright/test", "node"],
+    "rootDir": ".",
+    "paths": {
+      "@/*": ["../src/*"]
+    },
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["./**/*.ts"],
+  "exclude": ["../node_modules"]
+}
