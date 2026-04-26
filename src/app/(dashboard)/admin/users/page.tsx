@@ -12,17 +12,14 @@ interface AdminUsersPageProps {
   searchParams: Promise<{ search?: string; role?: string; page?: string }>;
 }
 
-export default async function AdminUsersPage({
-  searchParams,
-}: AdminUsersPageProps) {
+export default async function AdminUsersPage({ searchParams }: AdminUsersPageProps) {
   const session = await requireRole("ADMIN");
 
   // ← await searchParams przed użyciem
   const { search, role, page: pageParam } = await searchParams;
 
   const validRoles = Object.values(UserRole) as string[];
-  const roleFilter =
-    role && validRoles.includes(role) ? (role as UserRole) : undefined;
+  const roleFilter = role && validRoles.includes(role) ? (role as UserRole) : undefined;
 
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
 
@@ -47,7 +44,7 @@ export default async function AdminUsersPage({
         <select
           name="role"
           defaultValue={roleFilter ?? ""}
-          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
           aria-label="Filter by role"
         >
           <option value="">All roles</option>
@@ -63,7 +60,7 @@ export default async function AdminUsersPage({
           name="search"
           defaultValue={search ?? ""}
           placeholder="Search by name or email..."
-          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
         />
 
         <button

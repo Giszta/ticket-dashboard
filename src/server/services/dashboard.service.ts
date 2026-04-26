@@ -8,8 +8,7 @@ type DashboardServiceParams = {
 
 export const dashboardService = {
   async getDashboardData({ userId, userRole }: DashboardServiceParams) {
-    const filter =
-      userRole === "CUSTOMER" ? { createdById: userId } : undefined;
+    const filter = userRole === "CUSTOMER" ? { createdById: userId } : undefined;
 
     const [stats, recentTickets] = await Promise.all([
       ticketRepository.getStats(filter),

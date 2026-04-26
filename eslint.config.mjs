@@ -1,16 +1,27 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+// @ts-check
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import prettierConfig from "eslint-config-prettier";
+import reactHooks from "eslint-plugin-react-hooks";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const eslintConfig = tseslint.config(
+  {
+    ignores: [".next/**", "node_modules/**", "playwright-report/**", "test-results/**"],
+  },
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
 
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript", "prettier"),
+  // React Hooks plugin
+  {
+    plugins: {
+      "react-hooks": reactHooks,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+    },
+  },
+
   {
     rules: {
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
@@ -18,14 +29,16 @@ const eslintConfig = [
       "prefer-const": "error",
     },
   },
-  // Ignoruj reguły React dla plików Playwright
+
   {
-    files: ["e2e/**/*.ts"],
+    files: ["e2e/**/*.ts", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
     rules: {
-      "react-hooks/rules-of-hooks": "off",
       "@typescript-eslint/no-explicit-any": "off",
+      "react-hooks/rules-of-hooks": "off",
     },
   },
-];
+
+  prettierConfig,
+);
 
 export default eslintConfig;
