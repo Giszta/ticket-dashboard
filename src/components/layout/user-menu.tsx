@@ -2,14 +2,13 @@
 
 import { signOut } from "next-auth/react";
 import { useState } from "react";
-import { UserRole } from "@prisma/client";
 import { getRoleLabel } from "@/lib/utils/role-helpers"; // ← zmieniony import
-
+import type { UserRoleType } from "@/lib/validations/enums";
 interface UserMenuProps {
   user: {
     name?: string | null;
     email?: string | null;
-    role: UserRole;
+    role: UserRoleType; // ← zamiast UserRole
   };
 }
 

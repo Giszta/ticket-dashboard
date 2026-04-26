@@ -8,17 +8,16 @@ import { createTicketAction } from "@/server/actions/ticket.actions";
 import { createTicketSchema, type CreateTicketInput } from "@/lib/validations/ticket";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TicketPriority } from "@prisma/client";
-
+import { TicketPriorityEnum } from "@/lib/validations/enums";
 interface CreateTicketFormProps {
   categories: { id: string; name: string; color: string }[];
 }
 
-const PRIORITY_OPTIONS: { value: TicketPriority; label: string }[] = [
-  { value: "LOW", label: "Low" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "HIGH", label: "High" },
-  { value: "URGENT", label: "Urgent" },
+const PRIORITY_OPTIONS: { value: string; label: string }[] = [
+  { value: TicketPriorityEnum.LOW, label: "Low" },
+  { value: TicketPriorityEnum.MEDIUM, label: "Medium" },
+  { value: TicketPriorityEnum.HIGH, label: "High" },
+  { value: TicketPriorityEnum.URGENT, label: "Urgent" },
 ];
 
 export function CreateTicketForm({ categories }: CreateTicketFormProps) {

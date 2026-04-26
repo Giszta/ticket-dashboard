@@ -2,34 +2,26 @@
 
 import { useState, useTransition } from "react";
 import { changeUserRoleAction } from "@/server/actions/user.actions";
-import { UserRole } from "@prisma/client";
 import { cn } from "@/lib/utils";
-
+import type { UserRoleType } from "@/lib/validations/enums";
+import { UserRoleEnum } from "@/lib/validations/enums";
 interface ChangeRoleSelectProps {
   userId: string;
-  currentRole: UserRole;
+  currentRole: UserRoleType;
   isCurrentUser: boolean;
 }
 
-const ROLE_OPTIONS: { value: UserRole; label: string; description: string }[] = [
+const ROLE_OPTIONS: { value: UserRoleType; label: string; description: string }[] = [
   {
-    value: "CUSTOMER",
+    value: UserRoleEnum.CUSTOMER,
     label: "Customer",
     description: "Can create and view own tickets",
   },
-  {
-    value: "AGENT",
-    label: "Agent",
-    description: "Can manage and respond to tickets",
-  },
-  {
-    value: "ADMIN",
-    label: "Admin",
-    description: "Full access to all features",
-  },
+  { value: UserRoleEnum.AGENT, label: "Agent", description: "Can manage and respond to tickets" },
+  { value: UserRoleEnum.ADMIN, label: "Admin", description: "Full access to all features" },
 ];
 
-const ROLE_COLORS: Record<UserRole, string> = {
+const ROLE_COLORS: Record<UserRoleType, string> = {
   CUSTOMER: "bg-gray-100 text-gray-700",
   AGENT: "bg-blue-100 text-blue-700",
   ADMIN: "bg-purple-100 text-purple-700",
@@ -38,9 +30,9 @@ const ROLE_COLORS: Record<UserRole, string> = {
 export function ChangeRoleSelect({ userId, currentRole, isCurrentUser }: ChangeRoleSelectProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [optimisticRole, setOptimisticRole] = useState<UserRole>(currentRole);
+  const [optimisticRole, setOptimisticRole] = useState<UserRoleType>(currentRole);
 
-  function handleChange(newRole: UserRole) {
+  function handleChange(newRole: UserRoleType) {
     if (newRole === optimisticRole) return;
 
     setError(null);
@@ -76,7 +68,7 @@ export function ChangeRoleSelect({ userId, currentRole, isCurrentUser }: ChangeR
     <div className="space-y-1">
       <select
         value={optimisticRole}
-        onChange={(e) => handleChange(e.target.value as UserRole)}
+        onChange={(e) => handleChange(e.target.value as UserRoleType)}
         disabled={isPending}
         className={cn(
           "rounded-md border px-2.5 py-1 text-xs font-medium transition-all",

@@ -3,12 +3,12 @@
 import { useState, useTransition, useRef } from "react";
 import { addCommentAction } from "@/server/actions/ticket.actions";
 import { Button } from "@/components/ui/button";
-import { UserRole } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import type { UserRoleType } from "@/lib/validations/enums";
 
 interface AddCommentFormProps {
   ticketId: string;
-  userRole: UserRole;
+  userRole: UserRoleType;
 }
 
 export function AddCommentForm({ ticketId, userRole }: AddCommentFormProps) {

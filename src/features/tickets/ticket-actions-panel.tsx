@@ -7,9 +7,9 @@ import {
   updateTicketPriorityAction,
   assignTicketAction,
 } from "@/server/actions/ticket.actions";
-import { TicketStatus, TicketPriority, UserRole } from "@prisma/client";
 import { STATUS_CONFIG, PRIORITY_CONFIG } from "@/lib/utils/formatters";
 import { cn } from "@/lib/utils";
+import type { UserRoleType, TicketStatusType, TicketPriorityType } from "@/lib/validations/enums";
 
 interface Agent {
   id: string;
@@ -19,11 +19,11 @@ interface Agent {
 
 interface TicketActionsPanelProps {
   ticketId: string;
-  currentStatus: TicketStatus;
-  currentPriority: TicketPriority;
+  currentStatus: TicketStatusType;
+  currentPriority: TicketPriorityType;
   currentAssignedToId: string | null;
   agents: Agent[];
-  userRole: UserRole;
+  userRole: UserRoleType;
 }
 
 export function TicketActionsPanel({
@@ -41,7 +41,7 @@ export function TicketActionsPanel({
   // Customer nie widzi panelu akcji w ogóle
   if (userRole === "CUSTOMER") return null;
 
-  async function handleStatusChange(newStatus: TicketStatus) {
+  async function handleStatusChange(newStatus: TicketStatusType) {
     setError(null);
     startTransition(async () => {
       const result = await updateTicketStatusAction(ticketId, newStatus);
@@ -53,7 +53,7 @@ export function TicketActionsPanel({
     });
   }
 
-  async function handlePriorityChange(newPriority: TicketPriority) {
+  async function handlePriorityChange(newPriority: TicketPriorityType) {
     setError(null);
     startTransition(async () => {
       const result = await updateTicketPriorityAction(ticketId, newPriority);
@@ -78,12 +78,12 @@ export function TicketActionsPanel({
   }
 
   const statuses = Object.entries(STATUS_CONFIG) as [
-    TicketStatus,
-    (typeof STATUS_CONFIG)[TicketStatus],
+    TicketStatusType,
+    (typeof STATUS_CONFIG)[TicketStatusType],
   ][];
   const priorities = Object.entries(PRIORITY_CONFIG) as [
-    TicketPriority,
-    (typeof PRIORITY_CONFIG)[TicketPriority],
+    TicketPriorityType,
+    (typeof PRIORITY_CONFIG)[TicketPriorityType],
   ][];
 
   return (
